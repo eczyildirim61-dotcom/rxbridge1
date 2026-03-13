@@ -112,6 +112,10 @@ export default function App() {
   const [ekran, setEkran] = useState("giris");
   const [rol, setRol] = useState(null);
   const [aktif, setAktif] = useState(null);
+  const [eczacilar, setEczacilar] = useState(MOCK_ECZACILAR);
+  const [doktorlar, setDoktorlar] = useState(MOCK_DOKTORLAR);
+  const [doktorHesaplar, setDoktorHesaplar] = useState(MOCK_DOKTOR_HESAPLAR);
+  const [sekreterler, setSekreterler] = useState(MOCK_SEKRETERLER);
   const [aktifSekme, setAktifSekme] = useState("talepler");
   const [talepler, setTalepler] = useState(BASLANGIC_TALEPLER);
   const [secilen, setSecilen] = useState(null);
@@ -138,14 +142,14 @@ export default function App() {
   const girisYap = () => {
     setHata("");
     if (rol === "eczaci") {
-      const k = MOCK_ECZACILAR.find(e => e.id === girisForm.id && e.sifre === girisForm.sifre);
-      if (k) { setAktif(k); setEkran("panel"); } else setHata("Kullanıcı adı veya şifre hatalı.");
+      const k = eczacilar.find(e => e.id === girisForm.id && e.sifre === girisForm.sifre);
+      if (k) { setAktif(k); setEkran("panel"); } else setHata("Şifre hatalı.");
     } else if (rol === "doktor") {
-      const h = MOCK_DOKTOR_HESAPLAR.find(d => d.id === girisForm.id && d.sifre === girisForm.sifre);
-      if (h) { setAktif(MOCK_DOKTORLAR.find(d => d.id === h.id)); setEkran("panel"); } else setHata("Kullanıcı adı veya şifre hatalı.");
+      const h = doktorHesaplar.find(h => h.id === girisForm.id && h.sifre === girisForm.sifre);
+      if (h) { setAktif(doktorlar.find(d => d.id === h.id)); setEkran("panel"); } else setHata("Şifre hatalı.");
     } else {
-      const s = MOCK_SEKRETERLER.find(s => s.id === girisForm.id && s.sifre === girisForm.sifre);
-      if (s) { setAktif(s); setEkran("panel"); } else setHata("Kullanıcı adı veya şifre hatalı.");
+      const s = sekreterler.find(s => s.id === girisForm.id && s.sifre === girisForm.sifre);
+      if (s) { setAktif(s); setEkran("panel"); } else setHata("Şifre hatalı.");
     }
   };
 
@@ -155,8 +159,25 @@ export default function App() {
     if (rol === "doktor" && !kayitForm.diplomaNo) return setHata("Diploma tescil numarası zorunludur.");
     if (rol === "doktor" && !kayitForm.hastaneId) return setHata("Lütfen çalıştığınız hastaneyi seçin.");
     if (kayitForm.sifre !== kayitForm.sifre2) return setHata("Şifreler eşleşmiyor.");
-    alert("Kayıt talebiniz alındı. Onay sonrası giriş yapabilirsiniz.");
-    setEkran("giris_form");
+
+    // Yeni kullanıcıyı oluştur ve direkt giriş yaptır
+    const yeniId = "yeni_" + Date.now();
+    if (rol === "eczaci") {
+      const yeni = { id: yeniId, ad: kayitForm.ad, eczane: kayitForm.eczane || "Eczanem", sifre: kayitForm.sifre };
+      setEczacilar(prev => [...prev, yeni]);
+      setAktif(yeni);
+    } else if (rol === "doktor") {
+      const hastane = MOCK_HASTANELER.find(h => h.id === kayitForm.hastaneId);
+      const yeni = { id: yeniId, ad: kayitForm.ad, uzmanlik: kayitForm.uzmanlik || "Genel", hastaneId: kayitForm.hastaneId, hastane: hastane?.ad || "", diplomaNo: kayitForm.diplomaNo };
+      setDoktorlar(prev => [...prev, yeni]);
+      setDoktorHesaplar(prev => [...prev, { id: yeniId, sifre: kayitForm.sifre }]);
+      setAktif(yeni);
+    } else {
+      const yeni = { id: yeniId, ad: kayitForm.ad, doktorId: kayitForm.doktorId, sifre: kayitForm.sifre };
+      setSekreterler(prev => [...prev, yeni]);
+      setAktif(yeni);
+    }
+    setEkran("panel");
   };
 
   // Fotoğraf seçme — FileReader ile base64'e çevir
@@ -255,21 +276,21 @@ export default function App() {
   );
 
   if (ekran === "giris_form") {
-    const demolar = rol === "eczaci" ? [{ label: "Güven Eczanesi", value: "e1" }, { label: "Şifa Eczanesi", value: "e2" }] : rol === "doktor" ? [{ label: "Dr. Ahmet Yılmaz", value: "d1" }, { label: "Dr. Elif Şahin", value: "d2" }] : [{ label: "Selin Arslan (Dr. Yılmaz)", value: "s1" }, { label: "Kemal Yıldız (Dr. Şahin)", value: "s2" }];
+    const liste = rol === "eczaci" ? eczacilar : rol === "doktor" ? doktorlar : sekreterler;
     return (
       <div style={s.wrap}>
         <div style={s.card}>
           <div style={s.logoRow}><span style={s.rx}>Rx</span><span style={s.br}>Bridge</span></div>
           <div style={s.ayrac} />
           <h3 style={s.fBaslik}>{rol === "eczaci" ? "⚗️ Eczacı Girişi" : rol === "doktor" ? "🩺 Doktor Girişi" : "📋 Sekreter Girişi"}</h3>
-          <Fg label="Kullanıcı">
+          <Fg label="Ad Soyad">
             <select style={s.inp} value={girisForm.id} onChange={e => setGirisForm({ ...girisForm, id: e.target.value })}>
               <option value="">Seçiniz...</option>
-              {demolar.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              {liste.map(k => <option key={k.id} value={k.id}>{k.ad}</option>)}
             </select>
           </Fg>
           <Fg label="Şifre">
-            <input style={s.inp} type="password" placeholder="demo: 1234" value={girisForm.sifre} onChange={e => setGirisForm({ ...girisForm, sifre: e.target.value })} onKeyDown={e => e.key === "Enter" && girisYap()} />
+            <input style={s.inp} type="password" placeholder="Şifreniz" value={girisForm.sifre} onChange={e => setGirisForm({ ...girisForm, sifre: e.target.value })} onKeyDown={e => e.key === "Enter" && girisYap()} />
           </Fg>
           {hata && <p style={s.hata}>{hata}</p>}
           <button style={s.submit} onClick={girisYap}>Giriş Yap</button>
@@ -379,7 +400,7 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ color: "#fff", fontSize: 13, fontWeight: 600 }}>{aktif?.ad}</div>
-            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>{rol === "eczaci" ? aktif?.eczane : rol === "sekreter" ? `Sekreter — ${MOCK_DOKTORLAR.find(d => d.id === aktif?.doktorId)?.ad}` : aktif?.uzmanlik}</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>{rol === "eczaci" ? aktif?.eczane : rol === "sekreter" ? `Sekreter — ${doktorlar.find(d => d.id === aktif?.doktorId)?.ad}` : aktif?.uzmanlik}</div>
           </div>
           <button style={s.cikisBtn} onClick={cikis}>Çıkış</button>
         </div>
@@ -406,7 +427,7 @@ export default function App() {
                   <div style={s.bosL}><span style={{ fontSize: 32 }}>📋</span><p>{rol === "eczaci" ? "Henüz talep oluşturmadınız." : "Bekleyen bildirim yok."}</p></div>
                 ) : gorunen.map(t => {
                   const st = ST[t.durum];
-                  const doktor = MOCK_DOKTORLAR.find(d => d.id === t.doktorId);
+                  const doktor = doktorlar.find(d => d.id === t.doktorId);
                   return (
                     <div key={t.id} style={{ ...s.talepK, ...(secilen?.id === t.id ? s.talepKS : {}) }} onClick={() => setSecilen(t)}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
@@ -430,7 +451,7 @@ export default function App() {
               </div>
             </div>
             <div style={{ flex: 1, overflowY: "auto", padding: 32, background: "#F8FAFC" }}>
-              {secilen ? <DetayPanel t={secilen} rol={rol} aktif={aktif} doktor={MOCK_DOKTORLAR.find(d => d.id === secilen.doktorId)} onGuncelle={durumGuncelle} onMesaj={mesajGonder} onFotoBuyut={setBuyukFoto} /> : (
+              {secilen ? <DetayPanel t={secilen} rol={rol} aktif={aktif} doktor={doktorlar.find(d => d.id === secilen.doktorId)} onGuncelle={durumGuncelle} onMesaj={mesajGonder} onFotoBuyut={setBuyukFoto} /> : (
                 <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
                   <span style={{ fontSize: 48 }}>📋</span>
                   <p style={{ color: "#94A3B8", fontSize: 14, textAlign: "center", lineHeight: 1.6 }}>Detayları görüntülemek için<br />sol listeden bir talep seçin</p>
