@@ -354,13 +354,13 @@ export default function App() {
             <Fg label="Branş *">
               <select style={s.inp} value={kayitForm.uzmanlik} onChange={e => setKayitForm({ ...kayitForm, uzmanlik: e.target.value, doktorId: "" })} disabled={!kayitForm.hastaneId}>
                 <option value="">{kayitForm.hastaneId ? "Branş seçiniz..." : "Önce hastane seçin"}</option>
-                {[...new Set(MOCK_DOKTORLAR.filter(d => d.hastaneId === kayitForm.hastaneId).map(d => d.uzmanlik))].map(u => <option key={u} value={u}>{u}</option>)}
+                {[...new Set(doktorlar.filter(d => d.hastaneId === kayitForm.hastaneId).map(d => d.uzmanlik))].map(u => <option key={u} value={u}>{u}</option>)}
               </select>
             </Fg>
             <Fg label="Bağlı Olduğunuz Doktor *">
               <select style={s.inp} value={kayitForm.doktorId} onChange={e => setKayitForm({ ...kayitForm, doktorId: e.target.value })} disabled={!kayitForm.uzmanlik}>
                 <option value="">{kayitForm.uzmanlik ? "Doktor seçiniz..." : "Önce branş seçin"}</option>
-                {MOCK_DOKTORLAR.filter(d => d.hastaneId === kayitForm.hastaneId && d.uzmanlik === kayitForm.uzmanlik).map(d => <option key={d.id} value={d.id}>{d.ad} — {d.uzmanlik}</option>)}
+                {doktorlar.filter(d => d.hastaneId === kayitForm.hastaneId && d.uzmanlik === kayitForm.uzmanlik).map(d => <option key={d.id} value={d.id}>{d.ad} — {d.uzmanlik}</option>)}
               </select>
             </Fg>
             <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginBottom: 10 }}>Seçtiğiniz doktorun onayından sonra hesabınız aktif edilecektir.</p>
@@ -562,13 +562,13 @@ export default function App() {
                 <Fga label="Branş Seçin *">
                   <select style={s.inpa} value={talepForm.uzmanlik} onChange={e => setTalepForm({ ...talepForm, uzmanlik: e.target.value, doktorId: "" })} disabled={!talepForm.hastaneId}>
                     <option value="">{talepForm.hastaneId ? "Branş seçiniz..." : "Önce hastane seçin"}</option>
-                    {[...new Set(MOCK_DOKTORLAR.filter(d => d.hastaneId === talepForm.hastaneId).map(d => d.uzmanlik))].map(u => <option key={u} value={u}>{u}</option>)}
+                    {[...new Set(doktorlar.filter(d => d.hastaneId === talepForm.hastaneId).map(d => d.uzmanlik))].map(u => <option key={u} value={u}>{u}</option>)}
                   </select>
                 </Fga>
                 <Fga label="Doktor Seçin *">
                   <select style={s.inpa} value={talepForm.doktorId} onChange={e => setTalepForm({ ...talepForm, doktorId: e.target.value })} disabled={!talepForm.uzmanlik}>
                     <option value="">{talepForm.uzmanlik ? "Doktor seçiniz..." : "Önce branş seçin"}</option>
-                    {MOCK_DOKTORLAR.filter(d => d.hastaneId === talepForm.hastaneId && d.uzmanlik === talepForm.uzmanlik).map(d => <option key={d.id} value={d.id}>{d.ad}</option>)}
+                    {doktorlar.filter(d => d.hastaneId === talepForm.hastaneId && d.uzmanlik === talepForm.uzmanlik).map(d => <option key={d.id} value={d.id}>{d.ad}</option>)}
                   </select>
                 </Fga>
                 <Fga label="Hasta (Baş Harfler + Yaş) *">
